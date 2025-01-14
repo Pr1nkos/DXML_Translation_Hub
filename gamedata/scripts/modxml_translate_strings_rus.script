@@ -1,170 +1,188 @@
+-- Добавляем путь к package.path для поиска модулей в gamedata\scripts
+package.path = package.path .. ";gamedata\\scripts\\?.lua"
+
 -- Функция для безопасной загрузки модуля
 local function safe_require(module_name)
-    printf("[DEBUG] Attempting to load module: %s", module_name)
-    local status, result = pcall(require, module_name)
-    if status then
-        printf("[DEBUG] Successfully loaded module: %s", module_name)
-        return result
-    else
-        printf("[WARNING] Failed to load module '%s'. Error: %s", module_name, result)
-        return nil
-    end
-end
-
--- Функция для создания файла с переводами, если он отсутствует в gamedata/configs/text/rus
-local function ensure_translation_file(xml_file_path)
-    printf("[DEBUG] Ensuring translation file for: %s", xml_file_path)
-
-    -- Извлекаем имя файла без расширения
-    local base_name = xml_file_path:match("([^/\\]+)%.xml$")
-    if not base_name then
-        printf("[ERROR] Invalid XML file path: %s", xml_file_path)
-        return nil
-    end
-
-    -- Путь к файлу в gamedata/configs/text/rus
-    local rus_file_path = xml_file_path:gsub("text\\eng", "gamedata\\configs\\text\\rus")
-    printf("[DEBUG] Checking for Russian translation file at: %s", rus_file_path)
-
-    -- Проверяем, существует ли файл в gamedata/configs/text/rus
-    local rus_file = io.open(rus_file_path, "r")
-    if not rus_file then
-        printf("[INFO] Russian translation file not found: %s", rus_file_path)
-        
-        -- Проверяем, существует ли файл в missing_translations_rus
-        local missing_translation_path = string.format("gamedata/scripts/missing_translations_rus/%s.lua", base_name)
-        local missing_file = io.open(missing_translation_path, "r")
-        if not missing_file then
-            printf("[DEBUG] Creating missing translation file at: %s", missing_translation_path)
-            
-            local file = io.open(missing_translation_path, "w")
-            if file then
-                file:write("-- Translations for " .. base_name .. "\n")
-                file:write("return {\n")
-                file:write("    -- Add your translations here\n")
-                file:write("}\n")
-                file:close()
-                printf("[INFO] Successfully created missing translation file: %s", missing_translation_path)
-            else
-                printf("[ERROR] Failed to create missing translation file: %s", missing_translation_path)
-                return nil
-            end
-        else
-            missing_file:close()
-            printf("[INFO] Missing translation file already exists: %s", missing_translation_path)
-        end
-    else
-        rus_file:close()
-        printf("[INFO] Russian translation file found: %s", rus_file_path)
-    end
+	printf("[DEBUG] Attempting to load module: %s", module_name)
+	local status, result = pcall(require, module_name)
+	if status then
+		printf("[DEBUG] Successfully loaded module: %s", module_name)
+		return result
+	else
+		printf("[WARNING] Failed to load module '%s'. Error: %s", module_name, result)
+		return nil
+	end
 end
 
 -- Функция для загрузки переводов из applying_translate
-local function load_applying_translations()
-    local applying_translations = {}
-    local applying_folder = "applying_translate"
+local function load_applying_translations(xml_file_name)
+	local applying_translations = {}
+	local applying_folder = "gamedata\\scripts\\applying_translate"
 
-    -- Проверяем, существует ли папка applying_translate
-    local folder_exists = io.open(applying_folder, "r")
-    if not folder_exists then
-        printf("[INFO] Folder 'applying_translate' not found. Skipping.")
-        return applying_translations
-    end
-    folder_exists:close()
+	-- Извлекаем базовое имя файла без расширения и пути
+	local base_name = xml_file_name:match("([^/\\]+)%.xml$")
+	if not base_name then
+		printf("[ERROR] Invalid XML file name: %s", xml_file_name)
+		return applying_translations
+	end
 
-    -- Ищем все Lua-файлы в папке applying_translate
-    for file in io.popen('dir "' .. applying_folder .. '\\*.lua" /b'):lines() do
-        local base_name = file:gsub("%.lua$", "")
-        local translations = safe_require(applying_folder .. "/" .. base_name)
-        if translations then
-            applying_translations[base_name] = translations
-            printf("[INFO] Loaded translations from applying_translate: %s", base_name)
-        else
-            printf("[WARNING] Failed to load translations from applying_translate: %s", base_name)
-        end
-    end
+	-- Формируем имя Lua-файла на основе базового имени XML-файла
+	local lua_file_name = applying_folder .. "\\" .. base_name .. ".lua"
 
-    return applying_translations
+	-- Проверяем, существует ли файл
+	local file = io.open(lua_file_name, "r")
+	if file then
+		file:close()
+		-- Загружаем модуль
+		local translations = safe_require("applying_translate." .. base_name)
+		if translations then
+			applying_translations[base_name] = translations
+			printf("[INFO] Successfully loaded translations from: %s", lua_file_name)
+		else
+			printf("[WARNING] Failed to load translations from: %s", lua_file_name)
+		end
+	else
+		printf("[INFO] No applying translations found for: %s", lua_file_name)
+	end
+
+	return applying_translations
 end
 
 -- Функция для получения перевода по имени файла
 function get_translations_for_file(xml_file_name, applying_translations)
-    printf("[DEBUG] Getting translations for file: %s", xml_file_name)
+	printf("[DEBUG] Getting translations for file: %s", xml_file_name)
 
-    -- Путь к файлу в gamedata/configs/text/rus
-    local rus_file_path = xml_file_name:gsub("text\\eng", "gamedata\\configs\\text\\rus")
-    printf("[DEBUG] Loading translations from: %s", rus_file_path)
+	-- Извлекаем имя файла без расширения
+	local base_name = xml_file_name:match("([^/\\]+)%.xml$")
+	if not base_name then
+		printf("[ERROR] Invalid XML file name: %s", xml_file_name)
+		return nil
+	end
 
-    -- Проверяем, есть ли переводы в applying_translate
-    local base_name = xml_file_name:match("([^/\\]+)%.xml$")
-    if applying_translations[base_name] then
-        printf("[INFO] Using translations from applying_translate for: %s", base_name)
-        return applying_translations[base_name]
-    end
+	-- Проверяем, есть ли переводы в applying_translate
+	if applying_translations[base_name] then
+		printf("[INFO] Using translations from applying_translate for: %s", base_name)
+		return applying_translations[base_name]
+	end
 
-    -- Если переводов в applying_translate нет, загружаем из gamedata/configs/text/rus
-    local translations = safe_require(rus_file_path:gsub("gamedata\\configs\\text\\rus", ""):gsub("%.xml$", ""))
-    if translations then
-        printf("[DEBUG] Translations loaded successfully for: %s", xml_file_name)
-    else
-        printf("[WARNING] No translations found for file: %s", xml_file_name)
-    end
+	-- Если переводов в applying_translate нет, загружаем из gamedata/configs/text/rus
+	local rus_file_path = xml_file_name:gsub("text\\eng", "gamedata\\configs\\text\\rus")
+	printf("[DEBUG] Loading translations from: %s", rus_file_path)
 
-    return translations
+	local translations = safe_require(rus_file_path:gsub("text\\rus\\", ""):gsub("%.xml$", ""))
+	if translations then
+		printf("[DEBUG] Translations loaded successfully for: %s", xml_file_name)
+	else
+		printf("[WARNING] No translations found for file: %s", xml_file_name)
+	end
+
+	return translations
 end
 
 -- Функция для изменения текста в XML
 function change_xml_text(xml_obj, translations)
-    if not translations then
-        printf("[WARNING] No translations provided for file.")
-        return
-    end
+	if not translations then
+		printf("[WARNING] No translations provided for file.")
+		return
+	end
 
-    printf("[DEBUG] Applying translations to XML file")
+	printf("[DEBUG] Applying translations to XML file")
 
-    local found_count = 0
-    local missing_count = 0
+	local found_count = 0
+	local missing_count = 0
 
-    for string_id, new_text in pairs(translations) do
-        local query = string.format("string[id=%s] > text", string_id)
-        printf("[DEBUG] Querying XML for ID: %s", string_id)
+	for string_id, new_text in pairs(translations) do
+		local query = string.format("string[id=%s] > text", string_id)
+		printf("[DEBUG] Querying XML for ID: %s", string_id)
 
-        local res = xml_obj:query(query)
-        if res[1] then
-            local el = res[1]
-            local el_text = xml_obj:getText(el)
-            if el_text then
-                xml_obj:setText(el, new_text)
-                found_count = found_count + 1
-                printf("[DEBUG] Translation applied for ID: %s", string_id)
-            else
-                printf("[WARNING] Empty text for ID: %s", string_id)
-            end
-        else
-            printf("[WARNING] Element not found for ID: %s", string_id)
-            missing_count = missing_count + 1
-        end
-    end
+		local res = xml_obj:query(query)
+		if res[1] then
+			local el = res[1]
+			local el_text = xml_obj:getText(el)
+			if el_text then
+				xml_obj:setText(el, new_text)
+				found_count = found_count + 1
+				printf("[DEBUG] Translation applied for ID: %s", string_id)
+			else
+				printf("[WARNING] Empty text for ID: %s", string_id)
+			end
+		else
+			printf("[WARNING] Element not found for ID: %s", string_id)
+			missing_count = missing_count + 1
+		end
+	end
 
-    printf("[INFO] Translations applied: %d found, %d missing", found_count, missing_count)
+	printf("[INFO] Translations applied: %d found, %d missing", found_count, missing_count)
 end
 
--- Функция для регистрации callback on_xml_read
+-- Функция для создания файла с переводами, если он отсутствует в missing_translations_rus
+local function ensure_translation_file(xml_file_path)
+	printf("[DEBUG] Ensuring translation file for: %s", xml_file_path)
+
+	-- Извлекаем имя файла без расширения
+	local base_name = xml_file_path:match("([^/\\]+)%.xml$")
+	if not base_name then
+		printf("[ERROR] Invalid XML file path: %s", xml_file_path)
+		return nil
+	end
+
+	-- Путь к файлу в missing_translations_rus
+	local missing_translation_path = string.format("gamedata\\scripts\\missing_translations_rus\\%s.lua", base_name)
+	printf("[DEBUG] Checking for missing translation file at: %s", missing_translation_path)
+
+	-- Проверяем, существует ли файл в missing_translations_rus
+	local missing_file = io.open(missing_translation_path, "r")
+	if not missing_file then
+		printf("[INFO] Missing translation file not found: %s", missing_translation_path)
+
+		-- Создаем файл, если он отсутствует
+		local file = io.open(missing_translation_path, "w")
+		if file then
+			file:write("-- Translations for " .. base_name .. "\n")
+			file:write("return {\n")
+			file:write("    -- Add your translations here\n")
+			file:write("}\n")
+			file:close()
+			printf("[INFO] Successfully created missing translation file: %s", missing_translation_path)
+		else
+			printf("[ERROR] Failed to create missing translation file: %s", missing_translation_path)
+			return nil
+		end
+	else
+		missing_file:close()
+		printf("[INFO] Missing translation file already exists: %s", missing_translation_path)
+	end
+end
+
+-- Callback для обработки XML
 function on_xml_read()
-    printf("[INFO] Registering callback for on_xml_read")
-
-    -- Загружаем переводы из applying_translate
-    local applying_translations = load_applying_translations()
-
     RegisterScriptCallback("on_xml_read", function(xml_file_name, xml_obj)
-        -- Проверяем, что файл находится в text\eng
+        printf("[INFO] Callback triggered for file: %s", xml_file_name)
+
+        -- Проверяем, что файл НЕ находится в text\eng
         if not xml_file_name:match("^text\\eng\\.+%.xml$") then
-            printf("[DEBUG] Skipping file (not in text\\eng): %s", xml_file_name)
+            printf("[DEBUG] Processing file (not in text\\eng): %s", xml_file_name)
+
+            -- Загружаем переводы из applying_translate
+            local applying_translations = load_applying_translations(xml_file_name)
+
+            -- Применяем переводы из applying_translate
+            local translations = get_translations_for_file(xml_file_name, applying_translations)
+            if translations then
+                printf("[INFO] Applying translations for file: %s", xml_file_name)
+                change_xml_text(xml_obj, translations)
+            else
+                printf("[WARNING] No translations found for file: %s", xml_file_name)
+            end
             return
         end
 
-        printf("[INFO] Callback triggered for file: %s", xml_file_name)
-        
+        -- Логика для файлов из text\eng
+        printf("[DEBUG] Processing file from text\\eng: %s", xml_file_name)
+
+        -- Загружаем переводы из applying_translate
+        local applying_translations = load_applying_translations(xml_file_name)
+
         -- Проверяем, есть ли файл в gamedata/configs/text/rus
         local rus_file_path = xml_file_name:gsub("text\\eng", "gamedata\\configs\\text\\rus")
         printf("[DEBUG] Checking for Russian translation file at: %s", rus_file_path)
@@ -172,13 +190,13 @@ function on_xml_read()
         local rus_file = io.open(rus_file_path, "r")
         if not rus_file then
             printf("[INFO] Russian translation file not found: %s", rus_file_path)
-            
+
             -- Файл в gamedata/configs/text/rus отсутствует, создаём его в missing_translations_rus
             ensure_translation_file(xml_file_name)
         else
             rus_file:close()
             printf("[INFO] Russian translation file found: %s", rus_file_path)
-            
+
             -- Загружаем переводы из gamedata/configs/text/rus или applying_translate
             local translations = get_translations_for_file(xml_file_name, applying_translations)
             if translations then
@@ -193,9 +211,9 @@ end
 
 -- Основная функция on_game_start
 function on_game_start()
-    printf("[INFO] Starting on_game_start")
-    
-    -- Регистрация callback для обработки XML
+	printf("[INFO] Starting on_game_start")
+
+	-- Регистрация callback для обработки XML
     RegisterScriptCallback("on_xml_read", on_xml_read)
-    printf("[INFO] Callback on_xml_read registered successfully")
+	printf("[INFO] Callback on_xml_read registered successfully")
 end

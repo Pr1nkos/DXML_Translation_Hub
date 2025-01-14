@@ -1,19 +1,32 @@
 -- mm.lua
+-- Переводы для интерфейса и игровых элементов
+
 local translations = {
+	-- Погода
 	["Clear"] = "Ясная",
 	["Cloudy"] = "Облачная",
 	["Night"] = "Ночь",
 	["Rain"] = "Дождь",
-	["game type"] = "ТИП ИГРЫ",
+
+	-- Сложность
 	["gd_master"] = "Мастер",
 	["gd_novice"] = "Новичок",
 	["gd_veteran"] = "Ветеран",
-	["icon"] = "Значки",
-	["map"] = "КАРТА",
+	["gd_stalker"] = "Сталкер",
 	["st_opt_high"] = "Высоко",
 	["st_opt_low"] = "Низко",
 	["st_opt_medium"] = "Средне",
 	["st_opt_off"] = "Отключено",
+	["st_opt_extreme"] = "Макс. высоко",
+	["st_opt_ultra"] = "Очень высоко",
+
+	-- Интерфейс
+	["game type"] = "ТИП ИГРЫ",
+	["icon"] = "Значки",
+	["map"] = "КАРТА",
+	["version"] = "Версия",
+
+	-- Меню и действия
 	["ui_mm_action"] = "Действие",
 	["ui_mm_advanced"] = "Расширенные",
 	["ui_mm_alternative"] = "Альтернатив.",
@@ -64,22 +77,22 @@ local translations = {
 	["ui_mm_veteran"] = "Ветеран",
 	["ui_st_reset"] = "Сбросить",
 	["ui_st_sell_all"] = "Продать всё",
-	["version"] = "Версия",
-	["gd_stalker"] = "Сталкер",
-	["st_opt_extreme"] = "Макс. высоко",
-	["st_opt_ultra"] = "Очень высоко",
-	["ui_mm_confirm_changes"] = "Применить изменения? Все изменения будут отменены через",
+
+	-- Режимы игры
 	["st_cap_check_story"] = "Сюжетный режим",
 	["st_cap_check_survival"] = "Режим выживания (Beta)",
 	["st_cap_check_hardcore"] = "«Одна жизнь»",
 	["ui_mm_hardcore"] = "«Одна жизнь»",
+	["st_cap_check_azazel_mode"] = "«Жизнь после жизни»",
+
+	-- Дополнительные настройки
 	["ui_mm_only_campfire"] = "Сохранение: костры",
 	["ui_mm_environment_effect"] = "Доп. погодные эффекты",
 	["ui_mm_faction_sel"] = "Специализация",
 	["ui_mm_disanim"] = "Вкл./выкл. анимации исп. предметов",
-	["st_cap_check_azazel_mode"] = "«Жизнь после жизни»",
 	["ui_mm_character_name"] = "Имя персонажа",
 	["ui_mm_transitions_closed_disable"] = "Открыть переходы",
+	["ui_mm_confirm_changes"] = "Применить изменения? Все изменения будут отменены через",
 }
 
 return translations
