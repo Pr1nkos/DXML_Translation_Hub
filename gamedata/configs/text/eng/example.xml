@@ -6,13 +6,8 @@
 		<text>Ambient Occlusion Settings</text>
 	</string>
 	<string id="st_axe2_descr123">
-		<text>An implement used for a millennia to shape, split and cut wood, to harvest timber, as a weapon and as a ceremonial or heraldic symbol. The axe has many forms, is versatile and dangerous when used offensively.\n \n
-		%c[pda_white]PROPERTIES:\n
-		%c[d_cyan] • %c[pda_white] Melee Weapon\n
-		%c[d_cyan] • %c[pda_white] Light Attack Power: %c[ui_gray_2]120\n
-		%c[d_cyan] • %c[pda_white] Heavy Attack Power: %c[ui_gray_2]170\n
-		%c[d_cyan] • %c[pda_white] Armor Penetration: %c[ui_gray_2]24\n
-		%c[d_green] • %c[pda_white] Increased Range\n
+		<text>Welcome to Anomaly Mod Configuration Menu. By itself MCM does nothing. MCM provides a place for other mods/addons to display a settings UI.
+		\nTo the left you will see a list of mods/addons that are using MCM to do so.
 		</text>
 	</string>
 </string_table> 

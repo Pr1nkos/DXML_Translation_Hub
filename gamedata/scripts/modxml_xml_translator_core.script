@@ -139,6 +139,9 @@ local function load_translations_from_file(file_path)
             content = content:sub(4)
             log_message("DEBUG", "Removed BOM from file content")
         end
+		
+
+        log_message("DEBUG", string.format("Escaped content: %s", content))
 
         -- Загружаем содержимое как Lua-код
         local func, err = load("return " .. content, "translations", "t", {})
@@ -157,10 +160,12 @@ local function load_translations_from_file(file_path)
                     log_message("WARNING", string.format("Expected a table, but got: %s", type(result)))
                 end
             else
-                log_message("WARNING", string.format("Failed to execute translations: %s", result))
+                log_message("ERROR", string.format("Failed to execute translations: %s", result))
+                log_message("DEBUG", string.format("Error context: File: %s, Content: %s", file_path, content))
             end
         else
-            log_message("WARNING", string.format("Failed to load translations: %s", err))
+            log_message("ERROR", string.format("Failed to load translations: %s", err))
+            log_message("DEBUG", string.format("Error context: File: %s, Content: %s", file_path, content))
         end
     else
         log_message("INFO", string.format("No translation file found: %s", file_path))
@@ -175,7 +180,7 @@ local function write_translations_to_file(file_path, translations, base_name)
 		file:write("-- Translations for " .. base_name .. "\n")
 		file:write("return {\n")
 		for string_id, text in pairs(translations) do
-			file:write(string.format('    ["%s"] = [[%s]],\n', string_id, text))
+			file:write(string.format('    ["%s"] = [=[%s]=],\n', string_id, text))
 		end
 		file:write("}\n")
 		file:close()
