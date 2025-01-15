@@ -1,0 +1,8 @@
+<string_table>
+    <string id="ui_mcm_ssfx_module_ao">
+        <text>Ambient Occlusion</text>
+    </string>
+    <string id="ui_mcm_ssfx_module_ao_title">
+        <text>Ambient Occlusion Settings</text>
+    </string>
+</string_table> 
