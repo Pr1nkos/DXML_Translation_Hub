@@ -6,10 +6,10 @@ local function safe_require(module_name)
 	printf("[DEBUG] [xml_translator] Attempting to load module: %s", module_name)
 	local status, result = pcall(require, module_name)
 	if status then
-		--printf("[DEBUG] [xml_translator] Successfully loaded module: %s", module_name)
+		printf("[DEBUG] [xml_translator] Successfully loaded module: %s", module_name)
 		return result
 	else
-		--printf("[WARNING] [xml_translator] Failed to load module '%s'. Error: %s", module_name, result)
+		printf("[WARNING] [xml_translator] Failed to load module '%s'. Error: %s", module_name, result)
 		return nil
 	end
 end
@@ -22,7 +22,7 @@ local function load_applying_translations(xml_file_name)
 	-- Извлекаем базовое имя файла без расширения и пути
 	local base_name = xml_file_name:match("([^/\\]+)%.xml$")
 	if not base_name then
-		--printf("[ERROR] [xml_translator] Invalid XML file name: %s", xml_file_name)
+		printf("[ERROR] [xml_translator] Invalid XML file name: %s", xml_file_name)
 		return applying_translations
 	end
 
@@ -39,10 +39,10 @@ local function load_applying_translations(xml_file_name)
 			applying_translations[base_name] = translations
 			printf("[INFO] [xml_translator] Successfully loaded translations from: %s", lua_file_name)
 		else
-			--printf("[WARNING] [xml_translator] Failed to load translations from: %s", lua_file_name)
+			printf("[WARNING] [xml_translator] Failed to load translations from: %s", lua_file_name)
 		end
 	else
-		--printf("[INFO] [xml_translator] No applying translations found for: %s", lua_file_name)
+		printf("[INFO] [xml_translator] No applying translations found for: %s", lua_file_name)
 	end
 
 	return applying_translations
@@ -114,12 +114,6 @@ local function ensure_translation_file(xml_file_path, xml_obj)
 			if status and type(result) == "table" then
 				existing_translations = result
 				printf("[INFO] [xml_translator] Successfully loaded existing translations: %s", result)
-
-				-- Проверяем, пуста ли таблица
-				if next(existing_translations) == nil then
-					printf("[INFO] [xml_translator] Table is empty: %s", missing_translation_path)
-					--os.remove(missing_translation_path) -- Удаляем файл
-				end
 			else
 				printf("[WARNING] [xml_translator] Failed to parse existing translations: %s", result)
 			end
@@ -237,7 +231,6 @@ function on_xml_read()
 
 		-- Проверяем, что файл находится в text\rus
 		if xml_file_name:match("^text\\rus\\.+%.xml$") then
-		--if xml_file_name:match("NOT_LOADING") then
 			printf("[DEBUG] [xml_translator] Processing file (in text\\rus): %s", xml_file_name)
 
 			if base_name then
@@ -245,14 +238,13 @@ function on_xml_read()
 				local missing_translation_path =
 					string.format("gamedata\\scripts\\missing_translations_rus\\%s.lua", base_name)
 
-				-- Загружаем существующие переводы из файла
+				-- Чтение файла
 				local existing_translations = {}
 				local file = io.open(missing_translation_path, "r")
 				if file then
 					local content = file:read("*a")
 					file:close()
 
-					-- Парсим содержимое файла в таблицу
 					local func, err = load("return " .. content, "translations", "t", {})
 					if func then
 						local status, result = pcall(func)
@@ -272,31 +264,42 @@ function on_xml_read()
 					printf("[INFO] [xml_translator] No missing translation file found for: %s", base_name)
 				end
 
-				-- Удаляем записи, которые больше не нужны
-				local updated_translations = {}
-				for string_id, text in pairs(existing_translations) do
-					-- Проверяем, есть ли этот string_id в XML-файле
-					local query = string.format("string[id=%s] > text", string_id)
-					local res = xml_obj:query(query)
-					if not res[1] then
-						-- Если string_id отсутствует в XML, оставляем его в таблице
-						updated_translations[string_id] = text
-					else
-						--printf("[INFO] [xml_translator] Removed translation for ID: %s", string_id)
+				-- Создаем таблицу для хранения всех string_id из XML
+				local xml_string_ids = {}
+				local root = xml_obj:getRoot()
+				if root then
+					local function process_child(child)
+						if xml_obj:isElement(child) and xml_obj:getElementName(child) == "string" then
+							local attr_table = xml_obj:getElementAttr(child)
+							local string_id = attr_table and attr_table.id
+							if string_id then
+								xml_string_ids[string_id] = true
+							end
+						end
 					end
+					xml_obj:iterateChildren(root, process_child)
 				end
 
-				-- Перезаписываем файл с обновленными переводами
+				-- Удаляем записи, которые больше не нужны
+				local updated_translations = {}
+				local removed_count = 0
+				for string_id, text in pairs(existing_translations) do
+					if not xml_string_ids[string_id] then
+						updated_translations[string_id] = text
+					else
+						removed_count = removed_count + 1
+					end
+				end
+				printf("[INFO] [xml_translator] Removed %d translations", removed_count)
+
+				-- Запись обновленных переводов
 				local file = io.open(missing_translation_path, "w")
 				if file then
 					file:write("-- Translations for " .. base_name .. "\n")
 					file:write("{\n")
-
-					-- Записываем оставшиеся переводы
 					for string_id, text in pairs(updated_translations) do
 						file:write(string.format('    ["%s"] = "%s",\n', string_id, text))
 					end
-
 					file:write("}\n")
 					file:close()
 					printf("[INFO] [xml_translator] Successfully updated translations in: %s", missing_translation_path)
@@ -307,6 +310,7 @@ function on_xml_read()
 				printf("[ERROR] [xml_translator] Invalid XML file name: %s", xml_file_name)
 			end
 		end
+
 		if applying_translations and next(applying_translations) ~= nil then
 			change_xml_text(xml_obj, applying_translations[base_name])
 		end
