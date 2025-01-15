@@ -1,2 +1,4 @@
 /.vscode
 /meta.ini
+/missing_translations_rus/*
+/dynamic_translations/*
