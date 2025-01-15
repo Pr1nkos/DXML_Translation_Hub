@@ -2,3 +2,5 @@
 /meta.ini
 /missing_translations_rus/*
 /dynamic_translations/*
+gamedata/scripts/xml_translator/missing_translations_rus/*
+gamedata/scripts/xml_translator/dynamic_translations/*
