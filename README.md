@@ -1,10 +1,10 @@
 # RUS
 
-# DXML Translator by Pr1nkos
+# DXML Translation Hub by Pr1nkos
 
-**DXML Translator** — это мощный инструмент для автоматического перевода текстов в игре, ориентированный на работу с большим количеством модов. Мод позволяет добавлять переводы поверх существующих файлов, не перезаписывая их, что делает его идеальным решением для модмейкеров и переводчиков. 
+**DXML Translation Hub** — это мощный инструмент для автоматического перевода текстов в игре, ориентированный на работу с большим количеством модов. Мод позволяет добавлять переводы поверх существующих файлов, не перезаписывая их, что делает его идеальным решением для модмейкеров и переводчиков. 
 
-С помощью **DXML Translator** вы можете легко добавлять отсутствующие переводы, обновлять существующие и применять их в игре, не нарушая целостность оригинальных файлов. Мод поддерживает работу с XML-файлами в папках `gamedata/configs/text/eng` и `gamedata/configs/text/rus`, а также предоставляет возможность динамического добавления переводов.
+С помощью **DXML Translation Hub** вы можете легко добавлять отсутствующие переводы, обновлять существующие и применять их в игре, не нарушая целостность оригинальных файлов. Мод поддерживает работу с XML-файлами в папках `gamedata/configs/text/eng` и `gamedata/configs/text/rus`, а также предоставляет возможность динамического добавления переводов.
 
 ---
 
@@ -56,7 +56,7 @@
 
 ### 1. Добавление переводов для вашего мода
 
-Если вы создаете мод и хотите добавить поддержку переводов через **DXML Translator**, выполните следующие шаги:
+Если вы создаете мод и хотите добавить поддержку переводов через **DXML Translation Hub**, выполните следующие шаги:
 
 1. **Создайте XML-файлы**: Убедитесь, что текстовые данные вашего мода хранятся в XML-файлах в папке `gamedata/configs/text/eng`.
 2. **Добавьте переводы**: Поместите файлы с переводами в папку `dynamic_translations_rus`. Имя файла должно совпадать с именем оригинального XML-файла, но с расширением `.lua`. Например, для файла `example.xml` создайте файл `example.lua`.
@@ -70,7 +70,7 @@
 
 ### 2. Автоматическое добавление отсутствующих переводов
 
-Если в вашем моде есть строки, для которых отсутствуют переводы, **DXML Translator** автоматически добавит их в папку `missing_translations_rus`. Вы можете использовать эти файлы для заполнения переводов.
+Если в вашем моде есть строки, для которых отсутствуют переводы, **DXML Translation Hub** автоматически добавит их в папку `missing_translations_rus`. Вы можете использовать эти файлы для заполнения переводов.
 
 ### 3. Применение переводов
 
@@ -106,11 +106,11 @@
 
 # ENG
 
-# DXML Translator by Pr1nkos
+# DXML Translation Hub by Pr1nkos
 
-**DXML Translator** is a powerful tool for automatic translation of in-game texts, designed to work with a large number of mods. The mod allows adding translations on top of existing files without overwriting them, making it an ideal solution for modders and translators.
+**DXML Translation Hub** is a powerful tool for automatic translation of in-game texts, designed to work with a large number of mods. The mod allows adding translations on top of existing files without overwriting them, making it an ideal solution for modders and translators.
 
-With **DXML Translator**, you can easily add missing translations, update existing ones, and apply them in the game without compromising the integrity of the original files. The mod supports working with XML files in the `gamedata/configs/text/eng` and `gamedata/configs/text/rus` folders and provides the ability to dynamically add translations.
+With **DXML Translation Hub**, you can easily add missing translations, update existing ones, and apply them in the game without compromising the integrity of the original files. The mod supports working with XML files in the `gamedata/configs/text/eng` and `gamedata/configs/text/rus` folders and provides the ability to dynamically add translations.
 
 ---
 
@@ -162,7 +162,7 @@ The main settings of the mod are located in the `xml_translator_config.lua` file
 
 ### 1. Adding Translations for Your Mod
 
-If you are creating a mod and want to add translation support via **DXML Translator**, follow these steps:
+If you are creating a mod and want to add translation support via **DXML Translation Hub**, follow these steps:
 
 1. **Create XML files**: Ensure that your mod's text data is stored in XML files in the `gamedata/configs/text/eng` folder.
 2. **Add translations**: Place translation files in the `dynamic_translations_rus` folder. The file name must match the name of the original XML file but with the `.lua` extension. For example, for the file `example.xml`, create a file `example.lua`.
@@ -176,7 +176,7 @@ If you are creating a mod and want to add translation support via **DXML Transla
 
 ### 2. Automatic Addition of Missing Translations
 
-If your mod contains strings for which translations are missing, **DXML Translator** will automatically add them to the `missing_translations_rus` folder. You can use these files to fill in the translations.
+If your mod contains strings for which translations are missing, **DXML Translation Hub** will automatically add them to the `missing_translations_rus` folder. You can use these files to fill in the translations.
 
 ### 3. Applying Translations
 
