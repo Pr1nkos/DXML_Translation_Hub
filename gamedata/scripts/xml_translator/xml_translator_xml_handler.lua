@@ -1,3 +1,5 @@
+--xml_translator\xml_translator_xml_handler.lua
+
 -- Adding path to xml_translator modules to package.path
 package.path = package.path
 	.. ";gamedata\\scripts\\xml_translator\\?.lua;gamedata\\scripts\\xml_translator\\config\\?.lua;gamedata\\scripts\\xml_translator\\utils\\?.lua;"
@@ -8,6 +10,7 @@ local path_utils = require("xml_translator_path_utils")
 local translation_utils = require("xml_translator_translation_utils")
 local xml_utils = require("xml_translator_xml_utils")
 local config = require("xml_translator_config")
+local encoding_utils = require("xml_translator_encoding_utils")
 
 -- Main module
 local M = {}
@@ -28,12 +31,8 @@ function M.handle_eng_file(xml_file_name, xml_obj)
 	local missing_translation_path = path_utils.get_translation_path(base_name, config.MISSING_TRANSLATIONS_DIR)
 	logger.log_message("DEBUG", string.format("Missing translations file path: %s", missing_translation_path))
 
-	-- Loading existing translations
-	logger.log_message("DEBUG", "Loading existing translations")
-	local existing_translations = translation_utils.load_translations_from_file(missing_translation_path)
-
 	-- Collecting new translations from XML
-	local new_translations = {}
+	local text_list = {}
 	local root = xml_obj:getRoot()
 	if root then
 		local function process_child(child)
@@ -45,16 +44,9 @@ function M.handle_eng_file(xml_file_name, xml_obj)
 					if text_elements and text_elements[1] then
 						local text = xml_obj:getText(text_elements[1])
 						if text then
-							-- If there is no translation for string_id, add it
-							if not existing_translations[string_id] then
-								new_translations[string_id] = text
-								logger.log_message(
-									"INFO",
-									string.format("Adding new translation for ID: %s", string_id)
-								)
-							else
-								logger.log_message("INFO", string.format("Skipping existing ID: %s", string_id))
-							end
+							local utf8_text = encoding_utils.from_windows1251(text)
+							text_list[string_id] = utf8_text
+							logger.log_message("INFO", string.format("Adding new translation for ID: %s", string_id))
 						end
 					end
 				end
@@ -66,11 +58,8 @@ function M.handle_eng_file(xml_file_name, xml_obj)
 	end
 
 	-- If there are new translations, add them to the existing ones and write them to a file
-	if next(new_translations) then
-		for string_id, text in pairs(new_translations) do
-			existing_translations[string_id] = text
-		end
-		translation_utils.write_translations_to_file(missing_translation_path, existing_translations, base_name)
+	if next(text_list) then
+		translation_utils.write_translations_to_file(missing_translation_path, text_list, base_name)
 	else
 		logger.log_message("INFO", "No new translations to add")
 	end

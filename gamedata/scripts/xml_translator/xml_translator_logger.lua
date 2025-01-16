@@ -1,4 +1,5 @@
--- xml_translator_logger.lua
+--xml_translator\xml_translator_logger.lua
+
 -- Adding path to xml_translator modules to package.path
 package.path = package.path .. ";gamedata\\scripts\\xml_translator\\config\\?.lua;"
 

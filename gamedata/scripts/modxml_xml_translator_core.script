@@ -1,3 +1,5 @@
+--modxml_xml_translator_core.script
+
 -- Adding path to xml_translator modules to package.path
 package.path = package.path
 .. ";gamedata\\scripts\\xml_translator\\?.lua;gamedata\\scripts\\xml_translator\\config\\?.lua;"

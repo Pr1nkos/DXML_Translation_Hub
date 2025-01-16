@@ -1,3 +1,5 @@
+--xml_translator\xml_translator_callback_handler.lua
+
 -- Adding path to xml_translator modules to package.path
 package.path = package.path
 	.. ";gamedata\\scripts\\xml_translator\\?.lua;gamedata\\scripts\\xml_translator\\utils\\?.lua;"
@@ -50,3 +52,4 @@ function M.on_xml_read(xml_file_name, xml_obj, config)
 end
 
 return M
+

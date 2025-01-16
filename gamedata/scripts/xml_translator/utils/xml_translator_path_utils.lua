@@ -1,3 +1,5 @@
+--xml_translator\utils\xml_translator_path_utils.lua
+
 -- Connecting the logger module
 local logger = require("xml_translator_logger")
 
@@ -8,7 +10,7 @@ local M = {}
 function M.get_base_name(file_path)
 	logger.log_message("DEBUG", string.format("Extracting base name from file path: %s", file_path))
 
-	-- Используем регулярное выражение для извлечения имени файла без расширения
+	-- Use regular expression to extract filename without extension
 	local base_name = file_path:match("([^/\\]+)%.%w+$")
 
 	if base_name then

@@ -1,3 +1,5 @@
+-- xml_translator\utils\xml_translator_applying_translations_utils.lua
+
 -- Adding path to xml_translator modules to package.path
 package.path = package.path .. ";gamedata\\scripts\\xml_translator\\utils\\?.lua;"
 -- Connecting modules

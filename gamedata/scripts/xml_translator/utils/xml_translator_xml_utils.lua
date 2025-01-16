@@ -1,3 +1,5 @@
+--xml_translator\utils\xml_translator_xml_utils.lua
+
 -- Adding path to xml_translator modules to package.path
 package.path = package.path .. ";gamedata\\scripts\\xml_translator\\utils\\?.lua;"
 -- Connecting the logger modulele

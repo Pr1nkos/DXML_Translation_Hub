@@ -1,3 +1,5 @@
+--xml_translator\xml_translator_safe_require.lua
+
 local logger = require("xml_translator_logger")
 
 local M = {}

@@ -1,11 +1,13 @@
+--xml_translator\utils\xml_translator_encoding_utils.lua
+
 -- Connecting the logger module
 local logger = require("xml_translator_logger")
 
 -- Main module
 local M = {}
 
--- UTF-8 → Windows-1251 conversion table
-M.utf8_to_win1251 = {
+-- Исходная таблица для преобразования UTF-8 → Windows-1251
+M.encoding_table = {
 	-- Cyrillic
 	["А"] = "\192",
 	["а"] = "\224",
@@ -137,6 +139,18 @@ M.utf8_to_win1251 = {
 	["ї"] = "\191",
 }
 
+-- Функция для создания обратной таблицы
+local function create_reverse_table(table)
+	local reverse_table = {}
+	for k, v in pairs(table) do
+		reverse_table[v] = k
+	end
+	return reverse_table
+end
+
+-- Создаем промежуточную таблицу для Windows-1251 → UTF-8
+M.reverse_encoding_table = create_reverse_table(M.encoding_table)
+
 -- Function to iterate over UTF-8 characters
 function M.utf8_chars(str)
 	logger.log_message("DEBUG", "Starting UTF-8 character iteration")
@@ -175,12 +189,37 @@ function M.to_windows1251(text)
 
 	local result = ""
 	for char in M.utf8_chars(text) do
-		local win1251_char = M.utf8_to_win1251[char] or char
+		local win1251_char
+		if M.encoding_table[char] then
+			win1251_char = M.encoding_table[char]
+			logger.log_message("DEBUG", string.format("Converted character: %s → %s", char, win1251_char))
+		else
+			win1251_char = char
+		end
 		result = result .. win1251_char
-		logger.log_message("DEBUG", string.format("Converted character: %s → %s", char, win1251_char))
 	end
 
 	logger.log_message("INFO", "UTF-8 to Windows-1251 conversion completed")
+	return result
+end
+
+-- Function to convert Windows-1251 → UTF-8
+function M.from_windows1251(text)
+	logger.log_message("DEBUG", "Starting Windows-1251 to UTF-8 conversion")
+
+	local result = ""
+	for i = 1, #text do
+		local char = text:sub(i, i)
+		if M.reverse_encoding_table[char] then
+			utf8_char = M.reverse_encoding_table[char]
+			logger.log_message("DEBUG", string.format("Converted character: %s → %s", char, utf8_char))
+		else
+			utf8_char = char
+		end
+		result = result .. utf8_char
+	end
+
+	logger.log_message("DEBUG", "Windows-1251 to UTF-8 conversion completed")
 	return result
 end
 

@@ -1,4 +1,4 @@
--- gamedata\scripts\xml_translator\config.lua
+-- xml_translator\configs\xml_translator_config.lua
 
 local config = {}
 
@@ -17,9 +17,9 @@ config.LOG_LEVELS = {
 }
 
 -- Logging level (number)
-config.LOG_LEVEL = 2 -- Default 1 --> (DEBUG)
+config.LOG_LEVEL = 1 -- Default 2 --> (INFO)
 
--- ѕуть к папке с логами
+-- Path to the folder with logs
 config.LOGS_DIR = "gamedata\\scripts\\xml_translator\\logs"
 
 --Translation language (only works with rus now, because it on game start loads only eng and rus xml text files)
