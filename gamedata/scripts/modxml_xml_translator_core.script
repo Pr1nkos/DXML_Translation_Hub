@@ -2,7 +2,7 @@
 
 -- Adding path to xml_translator modules to package.path
 package.path = package.path
-.. ";gamedata\\scripts\\xml_translator\\?.lua;gamedata\\scripts\\xml_translator\\config\\?.lua;"
+	.. ";gamedata\\scripts\\xml_translator\\?.lua;gamedata\\scripts\\xml_translator\\config\\?.lua;"
 -- Connecting modules
 local config = require("xml_translator_config")
 local callback_handler = require("xml_translator_callback_handler")

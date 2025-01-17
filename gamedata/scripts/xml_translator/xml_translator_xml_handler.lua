@@ -1,5 +1,3 @@
---xml_translator\xml_translator_xml_handler.lua
-
 -- Adding path to xml_translator modules to package.path
 package.path = package.path
 	.. ";gamedata\\scripts\\xml_translator\\?.lua;gamedata\\scripts\\xml_translator\\config\\?.lua;gamedata\\scripts\\xml_translator\\utils\\?.lua;"
@@ -10,13 +8,12 @@ local path_utils = require("xml_translator_path_utils")
 local translation_utils = require("xml_translator_translation_utils")
 local xml_utils = require("xml_translator_xml_utils")
 local config = require("xml_translator_config")
-local encoding_utils = require("xml_translator_encoding_utils")
 
 -- Main module
 local M = {}
 
 -- Processing files in text\eng
-function M.handle_eng_file(xml_file_name, xml_obj)
+function M.handle_eng_file(xml_file_name, xml_obj, processed_string_ids)
 	logger.log_message("INFO", string.format("Starting to process English XML file: %s", xml_file_name))
 	logger.log_message("DEBUG", string.format("Processing file (in text\\eng): %s", xml_file_name))
 
@@ -31,35 +28,24 @@ function M.handle_eng_file(xml_file_name, xml_obj)
 	local missing_translation_path = path_utils.get_translation_path(base_name, config.MISSING_TRANSLATIONS_DIR)
 	logger.log_message("DEBUG", string.format("Missing translations file path: %s", missing_translation_path))
 
-	-- Collecting new translations from XML
-	local text_list = {}
-	local root = xml_obj:getRoot()
-	if root then
-		local function process_child(child)
-			if xml_obj:isElement(child) and xml_obj:getElementName(child) == "string" then
-				local attr_table = xml_obj:getElementAttr(child)
-				local string_id = attr_table and attr_table.id
-				if string_id then
-					local text_elements = xml_obj:query("text", child)
-					if text_elements and text_elements[1] then
-						local text = xml_obj:getText(text_elements[1])
-						if text then
-							local utf8_text = encoding_utils.from_windows1251(text)
-							text_list[string_id] = utf8_text
-							logger.log_message("INFO", string.format("Adding new translation for ID: %s", string_id))
-						end
-					end
-				end
-			end
-		end
-		xml_obj:iterateChildren(root, process_child)
-	else
-		logger.log_message("ERROR", "Root element not found in XML")
+	-- Load existing missed translations
+	local existing_translations = translation_utils.load_translations_from_file(missing_translation_path)
+	if not existing_translations then
+		existing_translations = {}
+		logger.log_message("DEBUG", "No existing translations found, starting with an empty table")
 	end
 
+	-- Collecting new translations from XML
+	logger.log_message("DEBUG", "Collecting new translations from XML")
+	local new_translations = xml_utils.ensure_translation_file(xml_obj, processed_string_ids)
+
 	-- If there are new translations, add them to the existing ones and write them to a file
-	if next(text_list) then
-		translation_utils.write_translations_to_file(missing_translation_path, text_list, base_name)
+	if next(new_translations) then
+		-- We combine existing and new translations
+		for string_id, text in pairs(new_translations) do
+			existing_translations[string_id] = text
+		end
+		translation_utils.write_translations_to_file(missing_translation_path, existing_translations, base_name)
 	else
 		logger.log_message("INFO", "No new translations to add")
 	end
@@ -68,7 +54,7 @@ function M.handle_eng_file(xml_file_name, xml_obj)
 end
 
 -- Processing files in translations xml folder
-function M.handle_translation_file(xml_file_name, xml_obj, missing_translations_dir)
+function M.handle_translation_file(xml_file_name, xml_obj, missing_translations_dir, processed_string_ids)
 	logger.log_message("INFO", string.format("Starting to process %s XML file: %s", config.LANGUAGE, xml_file_name))
 	logger.log_message("DEBUG", string.format("Processing file (in text\\rus): %s", xml_file_name))
 
@@ -89,7 +75,8 @@ function M.handle_translation_file(xml_file_name, xml_obj, missing_translations_
 
 		-- Updating translations
 		logger.log_message("DEBUG", "Updating translations")
-		local updated_translations = translation_utils.update_translations(existing_translations, xml_string_ids)
+		local updated_translations =
+			translation_utils.update_translations(existing_translations, xml_string_ids, processed_string_ids)
 
 		-- Write updated translations to file
 		logger.log_message("DEBUG", "Writing updated translations to file")

@@ -1,10 +1,8 @@
---xml_translator\utils\xml_translator_xml_utils.lua
-
 -- Adding path to xml_translator modules to package.path
 package.path = package.path .. ";gamedata\\scripts\\xml_translator\\utils\\?.lua;"
--- Connecting the logger modulele
+-- Connecting the logger module
 local logger = require("xml_translator_logger")
-local translation_utils = require("xml_translator_applying_translations_utils")
+local encoding_utils = require("xml_translator_encoding_utils")
 
 -- Main module
 local M = {}
@@ -64,7 +62,8 @@ function M.collect_string_ids_from_xml(xml_obj)
 end
 
 -- Applying translations to XML
-function M.change_xml_text(xml_obj, translations, encoding_utils)
+-- Applying translations to XML
+function M.change_xml_text(xml_obj, translations, encoding_utils, processed_string_ids)
 	logger.log_message("DEBUG", "Starting to apply translations to XML")
 
 	-- Проверка наличия переводов
@@ -72,6 +71,20 @@ function M.change_xml_text(xml_obj, translations, encoding_utils)
 		logger.log_message("WARNING", "No translations provided for file.")
 		return
 	end
+
+	-- -- Логирование содержимого processed_string_ids, если оно есть
+	-- if processed_string_ids then
+	-- 	if next(processed_string_ids) ~= nil then
+	-- 		logger.log_message("DEBUG", "Contents of processed_string_ids:")
+	-- 		for string_id, _ in pairs(processed_string_ids) do
+	-- 			logger.log_message("DEBUG", string.format("  string_id: %s", string_id))
+	-- 		end
+	-- 	else
+	-- 		logger.log_message("DEBUG", "processed_string_ids is empty")
+	-- 	end
+	-- else
+	-- 	logger.log_message("DEBUG", "processed_string_ids is not provided")
+	-- end
 
 	local found_count = 0
 	local missing_count = 0
@@ -92,6 +105,18 @@ function M.change_xml_text(xml_obj, translations, encoding_utils)
 		if res[1] then
 			xml_obj:setText(res[1], win1251_text)
 			found_count = found_count + 1
+			-- Добавляем string_id в список обработанных
+			if processed_string_ids then
+				processed_string_ids[string_id] = true
+				logger.log_message("DEBUG", string.format("Added string_id to processed_string_ids: %s", string_id))
+				-- Логирование содержимого processed_string_ids после добавления
+				-- logger.log_message("DEBUG", "Updated contents of processed_string_ids:")
+				-- for id, _ in pairs(processed_string_ids) do
+				-- 	logger.log_message("DEBUG", string.format("  string_id: %s", id))
+				-- end
+			else
+				logger.log_message("DEBUG", "processed_string_ids is not provided, skipping addition")
+			end
 			logger.log_message("DEBUG", string.format("Updated text for string_id: %s", string_id))
 		else
 			missing_count = missing_count + 1
@@ -104,24 +129,9 @@ function M.change_xml_text(xml_obj, translations, encoding_utils)
 end
 
 -- Writing new translations to a file
-function M.ensure_translation_file(xml_file_name, xml_obj, missing_translations_dir)
-	logger.log_message("DEBUG", string.format("Ensuring translation file for: %s", xml_file_name))
+function M.ensure_translation_file(xml_obj, processed_string_ids)
 
-	-- Get the base name of the file
-	local base_name = xml_file_name:match("([^/\\]+)%.xml$")
-	if not base_name then
-		logger.log_message("ERROR", string.format("Invalid XML file path: %s", xml_file_name))
-		return nil
-	end
-
-	-- Forming a path to a file with missing translations
-	local missing_translation_path = string.format("%s\\%s.lua", missing_translations_dir, base_name)
-	logger.log_message("DEBUG", string.format("Missing translations file path: %s", missing_translation_path))
-
-	-- Loading existing translations
-	local existing_translations = translation_utils.load_translations_from_file(missing_translation_path)
-
-	-- Collecting new translations from XML
+	local existing_translations = {}
 	local new_translations = {}
 	local root = xml_obj:getRoot()
 	if root then
@@ -129,20 +139,21 @@ function M.ensure_translation_file(xml_file_name, xml_obj, missing_translations_
 			if xml_obj:isElement(child) and xml_obj:getElementName(child) == "string" then
 				local attr_table = xml_obj:getElementAttr(child)
 				local string_id = attr_table and attr_table.id
-				if string_id then
+				if string_id and not processed_string_ids[string_id] then
 					local text_elements = xml_obj:query("text", child)
 					if text_elements and text_elements[1] then
 						local text = xml_obj:getText(text_elements[1])
 						if text then
-							-- Если перевод для string_id отсутствует, добавляем его
+							local utf8_text = encoding_utils.from_windows1251(text)
+							-- Проверяем, существует ли уже такой string_id в существующих переводах
 							if not existing_translations[string_id] then
-								new_translations[string_id] = text
+								new_translations[string_id] = utf8_text
 								logger.log_message(
 									"INFO",
 									string.format("Adding new translation for ID: %s", string_id)
 								)
 							else
-								logger.log_message("INFO", string.format("Skipping existing ID: %s", string_id))
+								logger.log_message("DEBUG", string.format("Skipping existing ID: %s", string_id))
 							end
 						end
 					end
@@ -153,16 +164,7 @@ function M.ensure_translation_file(xml_file_name, xml_obj, missing_translations_
 	else
 		logger.log_message("ERROR", "Root element not found in XML")
 	end
-
-	-- If there are new translations, add them to the existing ones and write them to a file
-	if next(new_translations) then
-		for string_id, text in pairs(new_translations) do
-			existing_translations[string_id] = text
-		end
-		translation_utils.write_translations_to_file(missing_translation_path, existing_translations, base_name)
-	else
-		logger.log_message("INFO", "No new translations to add")
-	end
+	return new_translations
 end
 
 return M

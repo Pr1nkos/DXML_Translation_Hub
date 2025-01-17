@@ -6,7 +6,7 @@ local logger = require("xml_translator_logger")
 -- Main module
 local M = {}
 
--- Исходная таблица для преобразования UTF-8 → Windows-1251
+-- Source table for UTF-8 → Windows-1251 conversion
 M.encoding_table = {
 	-- Cyrillic
 	["А"] = "\192",
@@ -139,7 +139,7 @@ M.encoding_table = {
 	["ї"] = "\191",
 }
 
--- Функция для создания обратной таблицы
+-- Function to create an inverse table
 local function create_reverse_table(table)
 	local reverse_table = {}
 	for k, v in pairs(table) do
@@ -148,7 +148,7 @@ local function create_reverse_table(table)
 	return reverse_table
 end
 
--- Создаем промежуточную таблицу для Windows-1251 → UTF-8
+-- Create an intermediate table for Windows-1251 → UTF-8
 M.reverse_encoding_table = create_reverse_table(M.encoding_table)
 
 -- Function to iterate over UTF-8 characters

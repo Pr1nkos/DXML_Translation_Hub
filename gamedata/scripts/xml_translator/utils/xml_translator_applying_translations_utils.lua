@@ -11,19 +11,15 @@ local error_utils = require("xml_translator_safe_require")
 local M = {}
 
 -- Loading translations from applying_translate
-function M.load_applying_translations(xml_file_name, dynamic_translations_dir)
+function M.load_applying_translations(base_name, dynamic_translations_dir)
 	logger.log_message("DEBUG", string.format("Starting to load applying translations for XML file: %s", xml_file_name))
 
 	local applying_translations = {}
 
-	-- Get the base name of the file
-	local base_name = path_utils.get_base_name(xml_file_name)
 	if not base_name then
 		logger.log_message("ERROR", string.format("Invalid XML file name: %s", xml_file_name))
 		return applying_translations
 	end
-
-	logger.log_message("DEBUG", string.format("Base name extracted: %s", base_name))
 
 	-- Forming the path to the translation file
 	local lua_file_name = path_utils.get_translation_path(base_name, dynamic_translations_dir)

@@ -1,5 +1,3 @@
---xml_translator\utils\xml_translator_translation_utils.lua
-
 -- Adding path to xml_translator modules to package.path
 package.path = package.path .. ";gamedata\\scripts\\xml_translator\\utils\\?.lua;"
 
@@ -23,7 +21,7 @@ function M.load_translations_from_file(file_path)
 			logger.log_message("DEBUG", "Removed BOM from file content")
 		end
 
-		-- Загрузка содержимого как Lua-код
+		-- Load content as Lua code
 		local func, err = load("return " .. content, "translations", "t", {})
 		if not func then
 			func, err = load(content, "translations", "t", {})
@@ -73,13 +71,15 @@ function M.write_translations_to_file(file_path, translations, base_name)
 end
 
 -- Updating translations
-function M.update_translations(existing_translations, string_ids)
+function M.update_translations(existing_translations, string_ids, processed_string_ids)
 	logger.log_message("DEBUG", "Starting to update translations")
 
 	local updated_translations = {}
 	local removed_count = 0
+
 	for string_id, text in pairs(existing_translations) do
-		if not string_ids[string_id] then
+		-- Если string_id не найден в string_ids и не был обработан ранее, добавляем его в обновленные переводы
+		if not string_ids[string_id] and (not processed_string_ids or not processed_string_ids[string_id]) then
 			updated_translations[string_id] = text
 		else
 			removed_count = removed_count + 1

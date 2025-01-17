@@ -17,7 +17,7 @@ config.LOG_LEVELS = {
 }
 
 -- Logging level (number)
-config.LOG_LEVEL = 1 -- Default 2 --> (INFO)
+config.LOG_LEVEL = 2 -- Default 2 --> (INFO)
 
 -- Path to the folder with logs
 config.LOGS_DIR = "gamedata\\scripts\\xml_translator\\logs"
