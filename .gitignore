@@ -1,5 +1,4 @@
 /.vscode
 /meta.ini
 gamedata/scripts/xml_translator/missing_translations_rus/*
-gamedata/scripts/xml_translator/dynamic_translations_rus/*
 gamedata/scripts/xml_translator/logs/*
