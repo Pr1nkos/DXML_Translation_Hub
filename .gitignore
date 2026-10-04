@@ -2,3 +2,18 @@
 /meta.ini
 gamedata/scripts/xml_translator/missing_translations_rus/*
 gamedata/scripts/xml_translator/logs/*
+
+# IDE
+.idea/
+*.iml
+.vscode/*
+!.vscode/extensions.json
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# OS
+.DS_Store
+Thumbs.db
